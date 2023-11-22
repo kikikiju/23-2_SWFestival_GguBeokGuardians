@@ -14,7 +14,7 @@ IMG_SIZE = (34, 26)
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
-model = load_model('models/2018_12_17_22_58_35.h5')
+model = load_model('models\\2023_11_14_23_13_17.h5')
 model.summary()
 
 def crop_eye(img, eye_points):
@@ -38,7 +38,7 @@ def crop_eye(img, eye_points):
 
 def play_warning_sound():
     frequency = 2500
-    duration = 1000
+    duration = 100
     winsound.Beep(frequency, duration)
 
 def gen_frames():
@@ -62,9 +62,19 @@ def gen_frames():
 
         if len(faces) == 0:
             elapsed_time_no_eyes = time.time() - start_time_no_eyes
-            if elapsed_time_no_eyes >= 4:
+            if elapsed_time_no_eyes >= 3:
                 play_warning_sound()
                 start_time_eyes_closed = time.time()
+                # Display "Warning" on the camera feed
+                font_scale = 5
+                font_thickness = 7
+                font_color = (0, 0, 255)  # Red color
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                text = 'Warning'
+                text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+                text_x = (img.shape[1] - text_size[0]) // 2
+                text_y = (img.shape[0] + text_size[1]) // 2
+                cv2.putText(img, text, (text_x, text_y), font, font_scale, font_color, font_thickness)
         else:
             start_time_no_eyes = time.time()
 
@@ -99,8 +109,18 @@ def gen_frames():
                 # Check for warning condition and play warning sound
                 if pred_l <= 0.1 and pred_r <= 0.1:
                     elapsed_time_eyes_closed = time.time() - start_time_eyes_closed
-                    if elapsed_time_eyes_closed >= 10:
+                    if elapsed_time_eyes_closed >= 3:
                         play_warning_sound()
+                        # Display "Warning" on the camera feed
+                        font_scale = 5
+                        font_thickness = 7
+                        font_color = (0, 0, 255)  # Red color
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        text = 'Warning'
+                        text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+                        text_x = (img.shape[1] - text_size[0]) // 2
+                        text_y = (img.shape[0] + text_size[1]) // 2
+                        cv2.putText(img, text, (text_x, text_y), font, font_scale, font_color, font_thickness)
 
         _, jpeg = cv2.imencode('.jpg', img)
         frame = jpeg.tobytes()
